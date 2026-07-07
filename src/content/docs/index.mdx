@@ -1,0 +1,31 @@
+---
+title: Portals Getting Started
+description: The definitive guide for developers building games with the Portals MCP.
+template: splash
+hero:
+  tagline: The definitive guide for developers building games with the Portals MCP.
+  actions:
+    - text: View on GitHub
+      link: https://github.com/busportals/portals-mcp
+      icon: external
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+## Where do you want to start?
+
+<CardGrid>
+	<LinkCard
+		title="New to Claude & MCPs?"
+		description="Start from the basics: what an MCP is, how to set one up, and how to build your first room in Portals."
+		href={`${base}/start-here/what-is-an-mcp/`}
+	/>
+	<LinkCard
+		title="Porting an existing game?"
+		description="Learn the mental model for Portals and the workflow for bringing your existing game over."
+		href={`${base}/porting/mental-model/`}
+	/>
+</CardGrid>

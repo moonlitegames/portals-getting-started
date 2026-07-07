@@ -1,0 +1,20 @@
+{
+  "name": "portals-getting-started",
+  "description": "Documentation site for building games with the Portals MCP",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "node ./scripts/generate-llms.mjs && astro build",
+    "generate:llms": "node ./scripts/generate-llms.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.3",
+    "astro": "^7.0.2",
+    "sharp": "^0.34.5"
+  }
+}
