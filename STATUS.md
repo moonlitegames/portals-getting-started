@@ -6,6 +6,17 @@ up context quickly.
 
 ## Implemented
 
+- **2026-07-28 (Cowork 2b):** Wrote real content for all five Porting Your
+  Game pages — `mental-model.md`, `capabilities.md`, `porting-workflow.md`,
+  `debugging.md`, `assets.md` — replacing the "Coming soon." stubs, aimed at
+  experienced game developers (Unity/Godot/Unreal/JS fluency assumed).
+  Existing frontmatter (`title` / `description`) left unchanged. Each page
+  ends with a copy-paste "Try it" prompt. Content is grounded in the real
+  `portals-mcp` tool surface (tool names, descriptions, and profile counts)
+  fetched from npm/unpkg — see the Decisions log entry below for sourcing
+  detail and what's inference versus sourced fact. Verified with a full
+  `npm run build` (Astro/Starlight build succeeds, all five routes generate
+  correctly, Pagefind index includes them).
 - **2026-07-28 (Cowork 2a):** Wrote real content for all four Start Here
   pages — `what-is-an-mcp.md`, `setup.md`, `first-room.md`, `the-loop.md` —
   replacing the "Coming soon." stubs. Existing frontmatter (`title` /
@@ -42,10 +53,9 @@ up context quickly.
 
 ## Planned
 
-- **Phase 2 — guide content (remaining).** Start Here is done (see
-  Implemented above, Cowork 2a). Still stubs:
-  - Porting Your Game: `mental-model`, `capabilities`, `porting-workflow`,
-    `debugging`, `assets`
+- **Phase 2 — guide content (remaining).** Start Here (Cowork 2a) and
+  Porting Your Game (Cowork 2b) are both done — see Implemented above.
+  Still stubs:
   - Reference: `gotchas`, `troubleshooting`, `versions`, `glossary`
 - **`reference/versions.md` — 2.0.0 entry.** Now that `portals-mcp@latest` is
   2.0.0, this stub needs a real entry covering: 2.0.0 vs. the 1.3.x line
@@ -59,8 +69,12 @@ up context quickly.
   benchmark promotion (or if it becomes the recommended path before then),
   revisit: whether Start Here should mention it at all for beginners (current
   call: no — compatibility is the only profile this guide documents, by
-  design), and whether `porting/capabilities.md` needs a 2.0-specific section
-  once that content is written.
+  design). `porting/capabilities.md` (Cowork 2b) is now written and made the
+  same call explicitly — it names the default `compatibility` profile as
+  what its planning tools (`resolve_gameplay_capability`,
+  `plan_gameplay_mechanic`, etc.) run under, with no `builder`-specific
+  section, consistent with Start Here. Revisit both together if `builder`
+  changes status.
 - **Phase 3 — automation & polish.**
   - Repo is launching at `moonlitegames/portals-getting-started` (personal
     account), transferring to the `busportals` org later — see the
@@ -166,6 +180,60 @@ up context quickly.
   runner defaulted to Node 20, but this Astro version requires >=22.12.
   Fixed by pinning `node-version: 22` in the `with:` block of the
   `withastro/action@v3` step in `.github/workflows/deploy.yml`.
+- **2026-07-28 (Cowork 2b) — sourcing:** Same access limitation as Cowork 2a
+  persisted: `github.com/busportals/portals-mcp` (README, `docs/`, and
+  `/releases`) all returned 404 again this session, including a fresh
+  attempt at a 1.3-specific changelog/release-notes page as the brief asked
+  for — none found, same as logged in Cowork 2a. Used the same working
+  path instead: fetched the actual bundled `README.md` for both `portals-mcp@2.0.0`
+  and `@1.3.7` via `unpkg.com`. Both versions' READMEs describe the same
+  ~53-tool default **compatibility** profile (marketplace/inventory,
+  room management, scene design, live game connection, AI-generated
+  assets, and the gameplay-planning tools this session's pages document),
+  so — unlike `setup.md`'s version-pin concern — none of these five pages
+  needed 1.3-vs-2.0 hedging; the tool surface they describe is stable
+  across both.
+- **2026-07-28 (Cowork 2b) — deviation, flagged as inference:** The brief
+  asked for "what genres/mechanics map well vs. poorly." Neither README
+  contains an explicit supported-genres list — that guidance in
+  `capabilities.md` is this session's own reasoning from the described tool
+  capabilities (specifically: Function Effects/"JS effectors" are an
+  NCalc expression language with conditionals and math but no loops,
+  arrays, or custom functions — confirmed directly from both READMEs), not
+  a fact pulled verbatim from Portals documentation. Flagging this
+  distinctly from the tool names/descriptions/counts elsewhere in these
+  five pages, which are sourced directly. If an authoritative genre-fit
+  list surfaces later (e.g. once direct repo access is available), reconcile
+  it against the reasoning in `capabilities.md`.
+- **2026-07-28 (Cowork 2b) — minor:** All five pages assume the
+  **compatibility** tool profile (the same default this whole guide
+  documents) and explicitly say so in `capabilities.md` and `debugging.md`,
+  rather than silently assuming it — consistent with the Track B call
+  already made for Start Here.
+- **2026-07-28 (Code 2b-patch):** Three 2.0-delta items were missing from
+  the original Cowork 2b brief and got added as a follow-up patch:
+  1. `debugging.md` — the `connect_to_game` bullet now states the bridge
+     listens on `ws://localhost:3099` (override via `PORTALS_BRIDGE_PORT`)
+     **and** warns that embedded/in-app browsers frequently can't reach
+     localhost websockets at all — use a regular desktop Chrome session for
+     live-connection work, or `connect_to_game` will look like a broken room
+     when it's actually a browser-environment limitation.
+  2. `capabilities.md` — added a full "Tool profiles" section with the
+     three-profile table (`compatibility` default/53 tools,
+     `expert`/27 low-level tools, `builder`/opt-in/7 outcome tools) and a
+     pointer to the bundled `docs://ai/tool-capability-manifest` resource as
+     the authoritative, queryable source, rather than only gesturing at
+     profiles in passing as the original version did.
+  3. `assets.md` — added a "Profile note" stating marketplace and paid
+     AI-generation tools are `compatibility`-only; `builder` deliberately
+     excludes both in favor of its own smaller outcome-oriented tool set.
+  Also revisited the "genres/mechanics map well vs. poorly" section flagged
+  as inference above: reworded section headers ("What tends to map well" /
+  "What tends to map poorly") and body copy throughout to use explicit
+  guidance language ("tends to," "leans on," "as a rule of thumb") instead
+  of flat declarative claims, so the hedging is visible in the page itself
+  and not just in this log. Re-verified with a full `npm run build` — all
+  five routes still generate correctly post-patch.
 
 ## Known Issues
 
@@ -187,7 +255,8 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 2a.5 (apply + 2.0 alignment) session —
-retargeted setup.md's version framing to portals-mcp 2.0.0, added a
-get_server_info first call to first-room.md, and added a tool-profiles
-callout
+Last updated: 2026-07-28 by Code 2b-patch session — added three missing
+2.0-delta items to the Porting Your Game pages (bridge port/embedded-browser
+caveat in debugging.md, tool-profile table + manifest resource in
+capabilities.md, builder-profile asset restriction in assets.md) and
+reworded capabilities.md's genre-fit section as explicit guidance
