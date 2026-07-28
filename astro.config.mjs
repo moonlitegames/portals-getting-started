@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://busportals.github.io',
+	site: 'https://moonlitegames.github.io',
 	base: '/portals-getting-started',
 	integrations: [
 		starlight({

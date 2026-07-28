@@ -41,10 +41,9 @@ up context quickly.
     `debugging`, `assets`
   - Reference: `gotchas`, `troubleshooting`, `versions`, `glossary`
 - **Phase 3 — automation & polish.**
-  - Confirm the real GitHub org/repo name for this site and update
-    `astro.config.mjs`'s `site`/`base` and the `social` GitHub link if they
-    differ from the `busportals/portals-getting-started` assumption made in
-    this session.
+  - Repo is launching at `moonlitegames/portals-getting-started` (personal
+    account), transferring to the `busportals` org later — see the
+    transfer-time `site` URL update tracked under Known Issues.
   - Enable GitHub Pages (Settings → Pages → Source: GitHub Actions) once the
     repo exists remotely.
   - Consider adding search, versioned docs, or a "last updated" date per page
@@ -58,11 +57,18 @@ up context quickly.
 - 2026-07-07: Initial scaffold created (Code Phase 1). Chose explicit sidebar
   item lists (not `autogenerate`) in `astro.config.mjs` so page order is
   guaranteed to match the spec regardless of filesystem ordering.
-- 2026-07-07: Assumed the docs site will live at
+- 2026-07-07: Assumed the docs site would live at
   `busportals/portals-getting-started` on GitHub (reusing the `busportals`
   org from `portals-mcp`) since no repo name/org was specified. Set
-  `site`/`base` in `astro.config.mjs` accordingly — this needs confirming in
-  Phase 3.
+  `site`/`base` in `astro.config.mjs` accordingly — flagged for confirmation.
+- 2026-07-28: Confirmed — repo is `moonlitegames/portals-getting-started` on
+  the user's personal GitHub account for now, with a planned transfer to the
+  `busportals` org later. Updated `site` in `astro.config.mjs` to
+  `https://moonlitegames.github.io` (`base` stays `/portals-getting-started`
+  since the repo name is unchanged). Left the `social` GitHub link pointing
+  at `busportals/portals-mcp` — that's the MCP project itself, not this docs
+  repo, so it's unaffected by who owns the docs site. See the transfer-time
+  follow-up under Known Issues.
 - 2026-07-07: Generated `llms.txt`/`llms-full.txt` are written to `public/`
   (gitignored) rather than committed, so they're always regenerated fresh at
   build time rather than risking staleness in version control.
@@ -86,7 +92,18 @@ up context quickly.
 
 - Site has not been built/deployed against a real GitHub repo yet, so Pages
   deployment and the link-check workflow are untested against a live remote.
+- **Transfer-time URL change required.** This repo currently lives at
+  `moonlitegames/portals-getting-started` and `astro.config.mjs` is set to
+  `site: 'https://moonlitegames.github.io'`. When the repo transfers to the
+  `busportals` org, update `site` to `https://busportals.github.io` (a plain
+  GitHub org/user rename via transfer does **not** update this — it's a
+  hardcoded config value, not derived). `base` (`/portals-getting-started`)
+  only needs to change if the repo is renamed during the transfer. After
+  updating, rebuild and spot-check the landing page's two cards and any
+  other absolute internal links (see the Starlight `base`-prefixing gotcha
+  logged above) since a stale `site` value won't break the build but will
+  produce wrong canonical/OG URLs and a wrong sitemap.
 
 ---
 
-Last updated: 2026-07-07 by Code Phase 1 (scaffold) session
+Last updated: 2026-07-28 by Code Phase 1 (scaffold) session — repo ownership update
