@@ -158,6 +158,10 @@ jobs:
 
           The PR description must follow the PHASE REPORT format:
           Done / Deviations / Blocked/needs decision / STATUS.md updated / Next suggested step.
+
+          Even if you conclude no guide pages need changes, you MUST still update
+          .portals-mcp-version and open the PR — a PR stating 'no doc changes
+          required' is a valid outcome. Never end without opening the PR.
           INNER_EOF
 
           # Export as multiline env var for the action step
@@ -171,6 +175,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: |
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(npm run build:*)"
           prompt: ${{ env.PORTALS_UPDATE_PROMPT }}
           # Debugging: set to false once the pipeline is proven end-to-end
           show_full_output: true

@@ -113,6 +113,13 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3-fix4):** Added `--allowedTools` to `claude_args`
+  — agent-mode runs require explicit tool approval; without it all Edit/Write
+  and git operations were rejected as "requires approval." Allowed tools:
+  Edit, Write, Read, Glob, Grep, and Bash patterns for git, gh pr, and npm
+  run build. Also appended mandatory-PR instruction to the prompt: agent must
+  always update `.portals-mcp-version` and open a PR even if no guide pages
+  need changes.
 - **2026-07-28 (Code Phase 3-fix3):** Removed `claude_args: --model
   claude-sonnet-4-6` from the claude-code-action step — previous run failed
   in 1 turn at $0 cost, indicating the first API call was rejected; explicit
@@ -375,5 +382,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3-fix3 session — removed explicit model
-arg and added show_full_output for debugging in check-portals-release
+Last updated: 2026-07-28 by Code Phase 3-fix4 session — added allowedTools and
+mandatory-PR instruction to check-portals-release workflow
