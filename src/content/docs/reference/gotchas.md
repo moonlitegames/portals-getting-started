@@ -3,27 +3,54 @@ title: Gotchas
 description: Common pitfalls and surprising behaviors to watch out for.
 ---
 
-Five things that trip people up often enough to write down. None of these are bugs — they're places where the platform's actual behavior doesn't match the assumption a new builder (or an assistant guessing on your behalf) is likely to bring in from a traditional game engine.
+Five things that trip people up often enough to write down. None of these are bugs — they're places where the platform's actual behavior doesn't match the assumption a new builder (or an assistant guessing on your behalf) is likely to bring in from a traditional game engine. The bundled `docs://reference/gotchas` resource inside the `portals-mcp` package has the exhaustive list (200+ entries covering field naming, JS sandbox limits, quest schema, multiplayer sync, and more) — what follows is a curated summary of the ones most likely to bite you first.
 
-## Spotlights that look wrong once placed
+## Spotlights that face the wrong way
 
-A spotlight added in a build session can look fine in the position you placed it and then look wrong — too dim, too tight a cone, barely visible — once you're actually standing in the room as a player. This happens because a light's cone angle and range interact with your room's actual scale, and a value that looked reasonable from a build-mode vantage point doesn't automatically translate to how it reads from player eye height and player-scale distances. Don't judge a spotlight from the angle you placed it at — after any lighting change, do a `render_scene` check from roughly where a player would actually stand, and adjust range/angle from that view, not the build view. See `get_context` for the current spotlight parameter reference rather than guessing at values.
+A spotlight placed with identity rotation `(0,0,0,1)` fires its cone **horizontally along world +Z** — it does *not* point down. This is the single most common cause of "my spotlight isn't lighting anything," because the mental model from real-world stage rigs assumes a light you put above something will illuminate what's below it. In Portals, the `SpotLight` cone follows the item's local +Z axis, so identity rotation means "straight ahead," not "straight down."
+
+**Why it bites:** you place a spotlight at `y: 3`, leave `rot` at default, and the beam shoots sideways instead of at the floor. The room still builds with no errors.
+
+**The fix:** to aim a spotlight straight down, set `rot` to `(-0.7071068, 0, 0, 0.7071068)` — that's -90 degrees around X. The bundled `docs://ref/items/spotlight` resource includes a full aim-direction cheatsheet (down, up, left, right, forward, back) with the exact quaternion for each. The `ang` field (default 80 degrees) controls cone spread, `r` controls range in meters, and `b` controls brightness — adjust all three after placing, not just one, since they interact with room scale.
 
 ## Spawn radius and multiplayer stacking
 
-A single spawn point with no radius will look completely fine every time you test alone — you're the only one spawning there, so there's nothing to collide with. It breaks the moment two or more real players join at once: everyone lands at the identical point, and you get stacked or clipped-together players until they move apart. This is the same class of mistake as testing a networked feature solo and assuming it works — the bug only exists under concurrency. If your room supports multiple simultaneous players, verify actual spread with two or more real sessions connected together, not just a solo playtest, and use multiple named spawn points (or a configured spread radius) rather than one shared point whenever more than one player can arrive at the same trigger.
+A single spawn point with `r: 0.0` (the default) will look completely fine every time you test alone. It breaks the moment two or more real players join at once: everyone lands at the identical `absPos` coordinates, and you get stacked or clipped-together players until they move apart. The spawn's `r` field is a **scatter radius in meters** — it's *not* a rotation — that spreads arrivals randomly across a `±r` square on X/Z around the spawn point. Use `r: 2.0` for a small huddle or `r: 5.0` for a wider scatter whenever more than one player can arrive at the same time.
 
-## Parenting and moving platforms
+**Why it bites:** the bug only exists under concurrency. Solo playtesting never reveals it.
 
-If you move or rotate an object that other items are supposed to travel with — a moving platform, a vehicle, a rotating base — those items only follow if they're actually parented to it in the room's item hierarchy. Visual proximity in the scene isn't the same as a parent-child relationship, and an item that merely sits on top of a platform without being parented to it will appear to "fall through" or get left behind the moment the platform moves. Before wiring movement logic to a compound object, confirm the parent-child relationships explicitly — `inspect_room_data` or `query_room` will show you the actual hierarchy, which is more reliable than trusting what looks connected in a screenshot.
+**Two more spawn-point details worth knowing:**
 
-## Rotation and orientation mismatches on imported models
+- `absPos` and `absRot` are **required** in the spawn's `extraData`, and `absPos` must be the world-space position even when the spawn has a parent (where `pos` is local to the parent). The engine reads `absPos`/`absRot` directly to place players — if they're missing or stale, players land at world origin.
+- `absRot` orients the **avatar only**, not the initial camera yaw. On login, the third-person camera keeps its pre-spawn yaw; teleport effects *do* reset the camera behind the player. Don't assume the player sees what the spawn faces — verify the opening view with `render_scene` after setting spawn rotation.
 
-A model that looked correctly oriented in your original engine can come in rotated — lying on its side, facing backward — once placed in Portals. The usual cause is an axis-convention mismatch baked into the export: Unity, Blender, and Unreal don't all agree on which axis is "up" or "forward," and a GLB carries whatever convention it was exported with. This is an import-time correction, not a logic bug, and it's easy to misdiagnose as broken trigger wiring when the object is actually just facing the wrong way. After uploading or placing any imported model, `render_scene` it before wiring any logic to it, and correct orientation with a small, verified rotation adjustment rather than guessing a large compound rotation in one shot — compounding several unverified rotation changes is how you end up chasing a gimbal-lock-shaped problem that was really just one wrong axis at the start.
+## Parent-child local space
+
+When an item has a `parentItemID` other than `0`, its `pos` and `rot` are in the **parent's local space**, not world space. A child at `pos: (0, 0, 0)` sits at the parent's center. A child at `pos: (1, 0, 0)` is one unit right of the parent's center. Rotation is also relative — a child with identity rotation inherits the parent's world rotation.
+
+**Why it bites:** an item that merely sits on top of a moving platform without being parented to it will appear to "fall through" or get left behind the moment the platform moves. Visual proximity isn't a parent-child relationship. And if you *do* parent items correctly but set their `pos` in world coordinates instead of local coordinates, they'll jump to unexpected positions relative to the parent.
+
+**One detail that surprises people from Unity/Unreal:** child scale is **independent** — it is *not* multiplied by parent scale. Parent scale does not cascade to child positions either. The bundled `docs://reference/parent-child` resource has the full specification, including Python generation examples.
+
+## Rotation format differences by field
+
+Different parts of the Portals data model use different rotation formats, and mixing them up produces items that face the wrong way with no error message. Here's the mapping from the bundled `docs://reference/gotchas`:
+
+| Field | Format |
+|---|---|
+| Item `rot` (room data) | Quaternion `[qx, qy, qz, qw]`. The MCP `add_item`/`modify_item` tools also accept Euler degrees `[x, y, z]` and auto-convert. |
+| SpawnPoint `absRot` | Quaternion. Orients the avatar only (see Spawn section above). |
+| CameraObject `rot` | Quaternion — but the default forward is **-Y (straight down)**, not horizontal. Apply a -90 degree X base rotation for a horizontal view. |
+| Room camera mode 2 `rot` | **Euler degrees** — `x` = pitch down, `y` = yaw, `z` = roll. |
+| `PortalsAnimation` `_transformStates[].rotation` | Quaternion; for cameras, negate Y and Z vs. the item `rot`. |
+| `PortalsAnimation` `states` | **Euler angles**, not quaternions. |
+| `MoveToSpot` `_transformState.rotation` | Quaternion array. |
+
+**Why it bites:** a model that looked correctly oriented in your original engine can come in rotated — lying on its side, facing backward — once placed in Portals. If you're porting from Unity, Blender, or Unreal, the axis convention baked into your GLB export may not match Portals' Y-up coordinate system. And a camera set with identity rotation `(0,0,0,1)` will be looking at the ground, not forward — this is easy to misdiagnose as broken trigger wiring when the camera is actually just pointing the wrong way.
 
 ## The `apply_operations` freshness model
 
-`apply_operations` enforces a strict rule worth knowing before it surprises you: it runs "atomic targeted ops against a mandatory fresh room download" and never uploads a partial batch or falls back to stale local data. In practice, that means every batch of operations needs its own fresh `get_room_data` snapshot taken immediately beforehand — if the room changed since you last downloaded it (another slice was applied, a collaborator built something, an earlier step in the same session already patched it), the operation is rejected rather than silently overwriting or half-applying on top of data that's already moved on.
+`apply_operations` enforces a strict rule worth knowing before it surprises you: it runs "atomic targeted ops against a mandatory fresh room download" and never uploads a partial batch or falls back to stale local data. Every batch of operations needs its own fresh `get_room_data` snapshot taken immediately beforehand — if the room changed since you last downloaded it, the operation is rejected rather than silently overwriting.
 
 This is a gotcha-*preventer*, not a gotcha: it's exactly the mechanism that stops the classic "two edits clobber each other" failure mode common with plain scene files. The mistake to avoid is working around a rejected batch by reaching for `set_room_data` (a full replacement) just to force it through — that discards anything that changed since your stale snapshot instead of surfacing the conflict. Re-download and retry the targeted operation instead, especially if you're applying several slices back-to-back in the same session (see [Porting Workflow](/porting/porting-workflow/)).
 
@@ -33,7 +60,7 @@ Ask Claude to check a room you're actively working on for the two easiest ones t
 
 ```text
 Check my current room for spawn points with no configured spread and any
-items that look parented to a moving object but might not actually be —
-use inspect_room_data or query_room to confirm the real hierarchy rather
-than guessing from how it looks.
+spotlights with identity rotation — use inspect_room_data or query_room
+to confirm the real hierarchy, spawn absPos/absRot fields, and spotlight
+rot values rather than guessing from how it looks.
 ```

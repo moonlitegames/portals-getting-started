@@ -102,6 +102,24 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code 2c-patch):** Gotchas re-grounded in bundled package
+  resources; tarball extraction added as the standard research method. Ran
+  `npm pack portals-mcp@2.0.0` in a temp dir, extracted the tarball, and read
+  the authoritative `dist/resources/reference/gotchas.md` (~227 lines),
+  `dist/resources/reference/parent-child.md`, `dist/resources/ref/items/spotlight.json`,
+  and `dist/resources/ref/items/spawn.json` directly from the package. Rewrote
+  `src/content/docs/reference/gotchas.md` replacing general-reasoning claims
+  with documented specifics: spotlight identity rotation fires horizontally
+  along +Z (not down), spawn `absRot` orients avatar only (not camera), camera
+  default forward is -Y, parent-child `pos`/`rot` are local space with
+  independent scale, and full rotation-format-by-field table. Added a pointer
+  to `docs://reference/gotchas` for the exhaustive 200+ entry list. Skimmed
+  `dist/resources/reference/cameras.md`, `parent-child.json`, `camera.json`,
+  and `movement-reference.md` for contradictions against `troubleshooting.md`
+  and porting pages — found no factual contradictions (porting pages don't
+  make specific rotation/camera/coordinate claims, and troubleshooting's
+  bridge/Node/version facts are all confirmed by the package). No changes
+  needed to troubleshooting or porting pages.
 - 2026-07-07: Initial scaffold created (Code Phase 1). Chose explicit sidebar
   item lists (not `autogenerate`) in `astro.config.mjs` so page order is
   guaranteed to match the spec regardless of filesystem ordering.
@@ -313,6 +331,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code 2c session — wrote all four Reference pages
-(gotchas, troubleshooting, versions, glossary), closing out Phase 2 entirely
-now that all 13 original stub pages have real content
+Last updated: 2026-07-28 by Code 2c-patch session — re-grounded gotchas.md in
+bundled portals-mcp@2.0.0 package resources (tarball extraction method)
