@@ -71,9 +71,27 @@ a link check ([lychee](https://github.com/lycheeverse/lychee)) on every pull
 request and weekly on a schedule, to catch broken links (internal or
 external) before they ship.
 
+## Automated portals-mcp update pipeline
+
+[`.github/workflows/check-portals-release.yml`](./.github/workflows/check-portals-release.yml)
+runs daily and checks whether a new version of `portals-mcp` has been published
+to npm. When one is found, it diffs the bundled reference docs between
+versions and invokes Claude Code to update affected guide pages, opening a
+pull request for human review. See [CONTRIBUTING.md](./CONTRIBUTING.md) for
+full details and setup requirements.
+
+## Branch protection
+
+Enable these rules on `main` before transferring the repo to the Portals team:
+
+- **Require a pull request before merging** with at least 1 approving review.
+- **Require status checks to pass** (`build` from `deploy.yml`, `lychee` from
+  `link-check.yml`).
+
+This ensures all changes — including automated doc-update PRs — go through
+review and never auto-merge.
+
 ## Contributing
 
-Guide pages are currently stubs (see [STATUS.md](./STATUS.md) for the plan).
-When writing real content, keep pages in the existing sidebar sections and
-slugs defined in `astro.config.mjs` — the landing page and `llms.txt`
-generation both depend on that structure.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on making changes,
+the automated update pipeline, and branch protection setup.

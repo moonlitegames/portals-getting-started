@@ -62,11 +62,22 @@ up context quickly.
 - README.md rewritten to explain the project, local dev, the llms.txt
   mechanism, deployment, and the intent to transfer this repo to the Portals
   team.
+- **2026-07-28 (Code Phase 3):** Automated documentation-update pipeline.
+  `.github/workflows/check-portals-release.yml` runs daily (06:00 UTC) and on
+  `workflow_dispatch`. Compares npm `portals-mcp@latest` against
+  `.portals-mcp-version`; when a new version is detected, downloads both old
+  and new tarballs via `npm pack`, diffs `dist/resources/` and `README.md`,
+  fetches GitHub release notes (best-effort), and invokes
+  `anthropics/claude-code-action@v1` (Sonnet) to update affected guide pages
+  and open a PR on `docs/update-vX` branch. PR never auto-merges. Includes
+  `dry_run` input for testing the version-check step without creating a PR.
+  Added `.portals-mcp-version` (seeded at 2.0.0), `CONTRIBUTING.md`
+  (automation explanation + branch protection guidance for the Portals team),
+  and updated `README.md` with branch protection and automation sections.
 
 ## In Progress
 
-- Nothing in progress; this is the end of the initial scaffold session
-  (Phase 1).
+- Nothing currently in progress.
 
 ## Planned
 
@@ -88,20 +99,29 @@ up context quickly.
   `plan_gameplay_mechanic`, etc.) run under, with no `builder`-specific
   section, consistent with Start Here. Revisit both together if `builder`
   changes status.
-- **Phase 3 — automation & polish.**
+- **Phase 3 — automation & polish.** ✅ Automation pipeline complete as of
+  Code Phase 3 (2026-07-28). Remaining polish items:
   - Repo is launching at `moonlitegames/portals-getting-started` (personal
     account), transferring to the `busportals` org later — see the
     transfer-time `site` URL update tracked under Known Issues.
   - Enable GitHub Pages (Settings → Pages → Source: GitHub Actions) once the
     repo exists remotely.
-  - Consider adding search, versioned docs, or a "last updated" date per page
-    once real content lands.
+  - Consider adding versioned docs or a "last updated" date per page.
   - Revisit whether `llms.txt`/`llms-full.txt` need per-page ordering (they're
     currently alphabetical within each sidebar group) once real content makes
     the order more visible.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3):** Automation pipeline added. Version-check
+  logic tested locally (dry-run confirms stored 2.0.0 matches npm latest;
+  tarball-diff logic tested against 1.3.7→2.0.0, producing 115-file diffstat).
+  Used `anthropics/claude-code-action@v1` with `--model claude-sonnet-4-6`
+  for the update agent. PR creation uses branch naming `docs/update-vX` and
+  PHASE REPORT format in the description. `CLAUDE_CODE_OAUTH_TOKEN` secret
+  required — not yet configured (needs repo admin). `act` was not used for
+  testing since the Claude Code action requires the secret; version-check and
+  tarball-diff steps were validated directly via shell instead.
 - **2026-07-28 (Code 2c-patch):** Gotchas re-grounded in bundled package
   resources; tarball extraction added as the standard research method. Ran
   `npm pack portals-mcp@2.0.0` in a temp dir, extracted the tarball, and read
@@ -331,5 +351,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code 2c-patch session — re-grounded gotchas.md in
-bundled portals-mcp@2.0.0 package resources (tarball extraction method)
+Last updated: 2026-07-28 by Code Phase 3 session — automated documentation-update
+pipeline (check-portals-release.yml, .portals-mcp-version, CONTRIBUTING.md)

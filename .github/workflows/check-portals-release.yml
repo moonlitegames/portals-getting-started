@@ -1,0 +1,160 @@
+name: Check for portals-mcp release
+
+on:
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run version check only, skip PR creation even if new version found'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.check.outputs.new_version }}
+      old_version: ${{ steps.check.outputs.old_version }}
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new portals-mcp version
+        id: check
+        run: |
+          OLD_VERSION=$(cat .portals-mcp-version | tr -d '[:space:]')
+          NEW_VERSION=$(curl -sf https://registry.npmjs.org/portals-mcp/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])")
+
+          echo "old_version=$OLD_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "portals-mcp is still at v$OLD_VERSION — nothing to do."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "New version detected: v$OLD_VERSION → v$NEW_VERSION"
+          fi
+
+  update-docs:
+    needs: check-version
+    if: needs.check-version.outputs.changed == 'true' && inputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Gather release context
+        id: context
+        env:
+          OLD_VERSION: ${{ needs.check-version.outputs.old_version }}
+          NEW_VERSION: ${{ needs.check-version.outputs.new_version }}
+        run: |
+          WORKDIR=$(mktemp -d)
+
+          # --- Changelog from GitHub Releases (best-effort) ---
+          CHANGELOG=""
+          RELEASE_JSON=$(curl -sf "https://api.github.com/repos/busportals/portals-mcp/releases/tags/v${NEW_VERSION}" || true)
+          if [ -n "$RELEASE_JSON" ] && echo "$RELEASE_JSON" | python3 -c "import sys,json; json.load(sys.stdin)['body']" >/dev/null 2>&1; then
+            CHANGELOG=$(echo "$RELEASE_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['body'])")
+          fi
+          # Fallback: try without v prefix
+          if [ -z "$CHANGELOG" ]; then
+            RELEASE_JSON=$(curl -sf "https://api.github.com/repos/busportals/portals-mcp/releases/tags/${NEW_VERSION}" || true)
+            if [ -n "$RELEASE_JSON" ] && echo "$RELEASE_JSON" | python3 -c "import sys,json; json.load(sys.stdin)['body']" >/dev/null 2>&1; then
+              CHANGELOG=$(echo "$RELEASE_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['body'])")
+            fi
+          fi
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No GitHub release notes found for v${NEW_VERSION}. Rely on the bundled-docs diff below."
+          fi
+          echo "$CHANGELOG" > "$WORKDIR/changelog.md"
+
+          # --- Download and extract both tarballs ---
+          cd "$WORKDIR"
+          npm pack "portals-mcp@${OLD_VERSION}" --silent 2>/dev/null || true
+          npm pack "portals-mcp@${NEW_VERSION}" --silent 2>/dev/null || true
+
+          mkdir -p old new
+          OLD_TGZ=$(ls portals-mcp-${OLD_VERSION}.tgz 2>/dev/null || true)
+          NEW_TGZ=$(ls portals-mcp-${NEW_VERSION}.tgz 2>/dev/null || true)
+
+          DIFF_SUMMARY="Could not produce a diff (tarball download failed)."
+          if [ -n "$OLD_TGZ" ] && [ -n "$NEW_TGZ" ]; then
+            tar xzf "$OLD_TGZ" -C old --strip-components=1
+            tar xzf "$NEW_TGZ" -C new --strip-components=1
+
+            # Diff dist/resources/ and README between versions
+            DIFF_OUTPUT=$(diff -ruN old/dist/resources/ new/dist/resources/ 2>/dev/null | head -c 50000 || true)
+            README_DIFF=$(diff -uN old/README.md new/README.md 2>/dev/null | head -c 10000 || true)
+
+            DIFF_SUMMARY=""
+            if [ -n "$DIFF_OUTPUT" ]; then
+              DIFF_SUMMARY="### dist/resources/ diff
+          $DIFF_OUTPUT"
+            else
+              DIFF_SUMMARY="### dist/resources/ diff
+          No changes in dist/resources/."
+            fi
+            if [ -n "$README_DIFF" ]; then
+              DIFF_SUMMARY="$DIFF_SUMMARY
+
+          ### README diff
+          $README_DIFF"
+            else
+              DIFF_SUMMARY="$DIFF_SUMMARY
+
+          ### README diff
+          No changes in README.md."
+            fi
+          fi
+          echo "$DIFF_SUMMARY" > "$WORKDIR/diff-summary.txt"
+
+          # Truncate to fit in environment / prompt (keep under 60k chars)
+          truncate -s '<60000' "$WORKDIR/diff-summary.txt" 2>/dev/null || head -c 60000 "$WORKDIR/diff-summary.txt" > "$WORKDIR/diff-summary-trunc.txt" && mv "$WORKDIR/diff-summary-trunc.txt" "$WORKDIR/diff-summary.txt"
+
+          echo "workdir=$WORKDIR" >> "$GITHUB_OUTPUT"
+
+      - name: Invoke Claude Code to update docs
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --model claude-sonnet-4-6
+          direct_prompt: |
+            portals-mcp released version ${{ needs.check-version.outputs.new_version }} (was ${{ needs.check-version.outputs.old_version }}).
+
+            Changelog:
+            $(cat ${{ steps.context.outputs.workdir }}/changelog.md)
+
+            Diff of bundled docs (dist/resources/ and README) between ${{ needs.check-version.outputs.old_version }} and ${{ needs.check-version.outputs.new_version }}:
+            $(cat ${{ steps.context.outputs.workdir }}/diff-summary.txt)
+
+            Review the guide pages in src/content/docs/ and update any page whose
+            instructions or feature descriptions are affected — the resources diff
+            is the authoritative signal, the changelog is context. Always update
+            reference/versions.md with a new entry. Update .portals-mcp-version.
+            Update STATUS.md: add an entry to the Decisions & Changes Log
+            ('v${{ needs.check-version.outputs.new_version }} docs update: <pages touched>'),
+            add any new-feature pages you did NOT write to Planned, and refresh
+            the Last updated line.
+
+            Open nothing to main — commit to a branch
+            docs/update-v${{ needs.check-version.outputs.new_version }} and open a
+            pull request titled
+            'Docs update for portals-mcp v${{ needs.check-version.outputs.new_version }}'.
+
+            The PR description must follow the PHASE REPORT format:
+            Done / Deviations / Blocked/needs decision / STATUS.md updated / Next suggested step.
