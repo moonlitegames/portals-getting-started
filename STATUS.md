@@ -113,6 +113,12 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3-fix3):** Removed `claude_args: --model
+  claude-sonnet-4-6` from the claude-code-action step — previous run failed
+  in 1 turn at $0 cost, indicating the first API call was rejected; explicit
+  model selection with subscription OAuth tokens is the likely cause. Let the
+  action use its default model. Added `show_full_output: true` for debugging
+  visibility (to be set back to `false` once the pipeline is proven).
 - **2026-07-28 (Code Phase 3-fix2):** Three fixes to `check-portals-release.yml`
   update-docs job: (1) Added per-job `permissions` blocks — `check-version`
   gets `contents: read`, `update-docs` gets `contents: write`,
@@ -369,5 +375,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3-fix2 session — permissions, prompt
-input name, and prompt content delivery fixes for check-portals-release
+Last updated: 2026-07-28 by Code Phase 3-fix3 session — removed explicit model
+arg and added show_full_output for debugging in check-portals-release

@@ -171,5 +171,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --model claude-sonnet-4-6
           prompt: ${{ env.PORTALS_UPDATE_PROMPT }}
+          # Debugging: set to false once the pipeline is proven end-to-end
+          show_full_output: true
