@@ -19,6 +19,8 @@ permissions:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       new_version: ${{ steps.check.outputs.new_version }}
       old_version: ${{ steps.check.outputs.old_version }}
@@ -48,6 +50,10 @@ jobs:
     needs: check-version
     if: needs.check-version.outputs.changed == 'true' && inputs.dry_run != 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -127,35 +133,43 @@ jobs:
           head -c 60000 "$WORKDIR/diff-summary.txt" > "$WORKDIR/diff-summary-trunc.txt"
           mv "$WORKDIR/diff-summary-trunc.txt" "$WORKDIR/diff-summary.txt"
 
-          echo "workdir=$WORKDIR" >> "$GITHUB_OUTPUT"
+          # Compose the full prompt with changelog and diff inlined
+          cat > "$WORKDIR/full-prompt.txt" <<INNER_EOF
+          portals-mcp released version ${NEW_VERSION} (was ${OLD_VERSION}).
+
+          Changelog:
+          $(cat "$WORKDIR/changelog.md")
+
+          Diff of bundled docs (dist/resources/ and README) between ${OLD_VERSION} and ${NEW_VERSION}:
+          $(cat "$WORKDIR/diff-summary.txt")
+
+          Review the guide pages in src/content/docs/ and update any page whose
+          instructions or feature descriptions are affected — the resources diff
+          is the authoritative signal, the changelog is context. Always update
+          reference/versions.md with a new entry. Update .portals-mcp-version.
+          Update STATUS.md: add an entry to the Decisions & Changes Log
+          ('v${NEW_VERSION} docs update: <pages touched>'),
+          add any new-feature pages you did NOT write to Planned, and refresh
+          the Last updated line.
+
+          Open nothing to main — commit to a branch
+          docs/update-v${NEW_VERSION} and open a pull request titled
+          'Docs update for portals-mcp v${NEW_VERSION}'.
+
+          The PR description must follow the PHASE REPORT format:
+          Done / Deviations / Blocked/needs decision / STATUS.md updated / Next suggested step.
+          INNER_EOF
+
+          # Export as multiline env var for the action step
+          {
+            echo "PORTALS_UPDATE_PROMPT<<PROMPT_EOF_9a7"
+            cat "$WORKDIR/full-prompt.txt"
+            echo "PROMPT_EOF_9a7"
+          } >> "$GITHUB_ENV"
 
       - name: Invoke Claude Code to update docs
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: --model claude-sonnet-4-6
-          direct_prompt: |
-            portals-mcp released version ${{ needs.check-version.outputs.new_version }} (was ${{ needs.check-version.outputs.old_version }}).
-
-            Changelog:
-            $(cat ${{ steps.context.outputs.workdir }}/changelog.md)
-
-            Diff of bundled docs (dist/resources/ and README) between ${{ needs.check-version.outputs.old_version }} and ${{ needs.check-version.outputs.new_version }}:
-            $(cat ${{ steps.context.outputs.workdir }}/diff-summary.txt)
-
-            Review the guide pages in src/content/docs/ and update any page whose
-            instructions or feature descriptions are affected — the resources diff
-            is the authoritative signal, the changelog is context. Always update
-            reference/versions.md with a new entry. Update .portals-mcp-version.
-            Update STATUS.md: add an entry to the Decisions & Changes Log
-            ('v${{ needs.check-version.outputs.new_version }} docs update: <pages touched>'),
-            add any new-feature pages you did NOT write to Planned, and refresh
-            the Last updated line.
-
-            Open nothing to main — commit to a branch
-            docs/update-v${{ needs.check-version.outputs.new_version }} and open a
-            pull request titled
-            'Docs update for portals-mcp v${{ needs.check-version.outputs.new_version }}'.
-
-            The PR description must follow the PHASE REPORT format:
-            Done / Deviations / Blocked/needs decision / STATUS.md updated / Next suggested step.
+          prompt: ${{ env.PORTALS_UPDATE_PROMPT }}

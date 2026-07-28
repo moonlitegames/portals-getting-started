@@ -113,6 +113,17 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3-fix2):** Three fixes to `check-portals-release.yml`
+  update-docs job: (1) Added per-job `permissions` blocks — `check-version`
+  gets `contents: read`, `update-docs` gets `contents: write`,
+  `pull-requests: write`, `id-token: write`. (2) Renamed `direct_prompt` →
+  `prompt` (the correct input name for `claude-code-action@v1`).
+  (3) Fixed prompt content delivery — `with:` inputs are literal strings, not
+  shell-expanded, so `$(cat ...)` was passed as the literal text. Moved prompt
+  composition into the shell step: changelog and diff contents are inlined
+  into a `full-prompt.txt` file, then exported to `$GITHUB_ENV` as a multiline
+  `PORTALS_UPDATE_PROMPT` variable using a unique heredoc delimiter, referenced
+  by the action as `${{ env.PORTALS_UPDATE_PROMPT }}`.
 - **2026-07-28 (Code Phase 3-fix):** Fixed shell precedence bug in
   `check-portals-release.yml` truncation line — `(A || B) && C` caused `mv`
   to run on a nonexistent temp file when `truncate` succeeded. Replaced with
@@ -358,5 +369,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3-fix session — shell bug fix, action
-version bumps, live test trigger for check-portals-release workflow
+Last updated: 2026-07-28 by Code Phase 3-fix2 session — permissions, prompt
+input name, and prompt content delivery fixes for check-portals-release
