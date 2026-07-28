@@ -87,11 +87,17 @@ up context quickly.
   or LinkCards are added later. See
   [reference/gotchas](./src/content/docs/reference/gotchas.md) as a natural
   place to document this for site authors once real content is written.
+- 2026-07-28: First real Pages deploy failed — the `withastro/action@v3`
+  runner defaulted to Node 20, but this Astro version requires >=22.12.
+  Fixed by pinning `node-version: 22` in the `with:` block of the
+  `withastro/action@v3` step in `.github/workflows/deploy.yml`.
 
 ## Known Issues
 
-- Site has not been built/deployed against a real GitHub repo yet, so Pages
-  deployment and the link-check workflow are untested against a live remote.
+- First Pages deploy against the real `moonlitegames/portals-getting-started`
+  repo failed on Node version (see Decisions log above); the
+  `node-version: 22` fix hasn't been confirmed by a successful run yet. The
+  link-check workflow is still untested against a live remote.
 - **Transfer-time URL change required.** This repo currently lives at
   `moonlitegames/portals-getting-started` and `astro.config.mjs` is set to
   `site: 'https://moonlitegames.github.io'`. When the repo transfers to the
@@ -106,4 +112,4 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 1 (scaffold) session — repo ownership update
+Last updated: 2026-07-28 by Code Phase 1 (scaffold) session — deploy Node version fix
