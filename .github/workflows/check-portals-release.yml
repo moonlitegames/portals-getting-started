@@ -25,7 +25,7 @@ jobs:
       changed: ${{ steps.check.outputs.changed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check for new portals-mcp version
         id: check
@@ -50,10 +50,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -124,7 +124,8 @@ jobs:
           echo "$DIFF_SUMMARY" > "$WORKDIR/diff-summary.txt"
 
           # Truncate to fit in environment / prompt (keep under 60k chars)
-          truncate -s '<60000' "$WORKDIR/diff-summary.txt" 2>/dev/null || head -c 60000 "$WORKDIR/diff-summary.txt" > "$WORKDIR/diff-summary-trunc.txt" && mv "$WORKDIR/diff-summary-trunc.txt" "$WORKDIR/diff-summary.txt"
+          head -c 60000 "$WORKDIR/diff-summary.txt" > "$WORKDIR/diff-summary-trunc.txt"
+          mv "$WORKDIR/diff-summary-trunc.txt" "$WORKDIR/diff-summary.txt"
 
           echo "workdir=$WORKDIR" >> "$GITHUB_OUTPUT"
 

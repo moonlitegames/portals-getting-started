@@ -113,6 +113,13 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3-fix):** Fixed shell precedence bug in
+  `check-portals-release.yml` truncation line — `(A || B) && C` caused `mv`
+  to run on a nonexistent temp file when `truncate` succeeded. Replaced with
+  unconditional `head -c 60000` + `mv`. Bumped `actions/checkout@v4` → `@v5`
+  and `actions/setup-node@v4` → `@v5` in both jobs to clear Node 20
+  deprecation annotations. Downgraded `.portals-mcp-version` from `2.0.0` to
+  `1.3.7` to allow a live test run of the full pipeline.
 - **2026-07-28 (Code Phase 3):** Automation pipeline added. Version-check
   logic tested locally (dry-run confirms stored 2.0.0 matches npm latest;
   tarball-diff logic tested against 1.3.7→2.0.0, producing 115-file diffstat).
@@ -351,5 +358,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3 session — automated documentation-update
-pipeline (check-portals-release.yml, .portals-mcp-version, CONTRIBUTING.md)
+Last updated: 2026-07-28 by Code Phase 3-fix session — shell bug fix, action
+version bumps, live test trigger for check-portals-release workflow
