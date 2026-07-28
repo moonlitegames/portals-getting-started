@@ -6,6 +6,23 @@ up context quickly.
 
 ## Implemented
 
+- **2026-07-28 (Code 2c):** Wrote real content for all four Reference pages —
+  `gotchas.md`, `troubleshooting.md`, `versions.md`, `glossary.md` —
+  replacing the "Coming soon." stubs. Existing frontmatter (`title` /
+  `description`) left unchanged. **This closes out Phase 2 entirely** —
+  every one of the original 13 stub pages (Start Here, Porting Your Game,
+  Reference) now has real content. `gotchas.md` covers spotlights, spawn
+  radius, parenting, and rotation pitfalls plus the `apply_operations`
+  freshness model; `troubleshooting.md` is symptom-first (auth failures,
+  "Claude doesn't know Portals," version drift, Node version, runtime
+  bridge failures, and where `get_server_info` fits in a bug report);
+  `versions.md` has two entries (2.0.0 and 1.3) in a template format with
+  an HTML comment at the top declaring that format binding for future
+  automated entries; `glossary.md` is a ~23-term alphabetical reference.
+  See the Decisions log below for what's directly sourced from the
+  `portals-mcp` README versus this session's own domain-knowledge
+  reasoning. Verified with a full `npm run build` (all 15 routes generate
+  correctly, Pagefind index includes them).
 - **2026-07-28 (Cowork 2b):** Wrote real content for all five Porting Your
   Game pages — `mental-model.md`, `capabilities.md`, `porting-workflow.md`,
   `debugging.md`, `assets.md` — replacing the "Coming soon." stubs, aimed at
@@ -53,18 +70,14 @@ up context quickly.
 
 ## Planned
 
-- **Phase 2 — guide content (remaining).** Start Here (Cowork 2a) and
-  Porting Your Game (Cowork 2b) are both done — see Implemented above.
-  Still stubs:
-  - Reference: `gotchas`, `troubleshooting`, `versions`, `glossary`
-- **`reference/versions.md` — 2.0.0 entry.** Now that `portals-mcp@latest` is
-  2.0.0, this stub needs a real entry covering: 2.0.0 vs. the 1.3.x line
-  (compatibility profile behavior unchanged; the `builder` profile is new and
-  opt-in via `PORTALS_MCP_TOOL_PROFILE`, gated behind benchmark promotion),
-  and general guidance on reading `dist-tags` before assuming `@latest` means
-  "what this guide describes." Start Here (`setup.md`) now covers the
-  practical pin/`@latest` tradeoff inline, but the authoritative version
-  history/compatibility table belongs here.
+- **Phase 2 — guide content.** ✅ Complete as of Code 2c (2026-07-28). All
+  13 pages across Start Here, Porting Your Game, and Reference have real
+  content — see Implemented above for all three sub-sessions (Cowork 2a,
+  Cowork 2b + patch, Code 2c). Nothing outstanding in this phase; the
+  `reference/versions.md` 2.0.0-entry item and the general "still stubs"
+  tracking that used to live here are both resolved by `versions.md` now
+  existing with a real 2.0.0 entry (see Implemented and the Decisions log
+  below).
 - **Track B — 2.0 delta items.** Once 2.0.0's `builder` tool profile clears
   benchmark promotion (or if it becomes the recommended path before then),
   revisit: whether Start Here should mention it at all for beginners (current
@@ -234,6 +247,51 @@ up context quickly.
   of flat declarative claims, so the hedging is visible in the page itself
   and not just in this log. Re-verified with a full `npm run build` — all
   five routes still generate correctly post-patch.
+- **2026-07-28 (Code 2c) — sourcing:** Ran two fresh, more targeted fetches
+  of `portals-mcp@2.0.0`'s and `@1.3.7`'s READMEs via `unpkg.com`
+  specifically asking about gotchas/pitfalls, the `apply_operations`
+  freshness model, `get_server_info`, auth flow, and Codex support (rather
+  than reusing Cowork 2b's more general fetches). This directly confirmed,
+  close to verbatim, several facts already used in Porting Your Game: the
+  freshness model ("atomic targeted ops against a mandatory fresh room
+  download; never uploads partial batches or falls back to stale local
+  data"), `get_server_info`'s exact return shape (version, commit, active
+  tool profile) and the recommendation to include it in bug reports, and —
+  independently — the embedded/in-app-browser websocket caveat already
+  added to `debugging.md` in Code 2b-patch, which this fetch reproduced
+  almost word-for-word. Treating that reproduction as a good sign the
+  Code 2b-patch addition was accurate. Also newly confirmed: Codex client
+  support details (`default_tools_approval_mode = "approve"` in
+  `~/.codex/config.toml`), used in `troubleshooting.md`'s framing of MCP
+  clients generally (see [glossary](./src/content/docs/reference/glossary.md)'s
+  "MCP client" entry).
+- **2026-07-28 (Code 2c) — deviation, flagged as inference:** The brief's
+  four named `gotchas.md` topics — spotlights, spawn radius, parenting,
+  rotations — are **not** covered in either README (confirmed by the
+  targeted fetch above; both explicitly came back empty on these topics).
+  They're likely documented only in the bundled `docs://` resources (160 in
+  2.0.0, ~148 in 1.3.7), which aren't reachable outside a live MCP session
+  in this sandbox — same root limitation as the persistent GitHub 404s
+  logged in every prior session. Wrote all four from general 3D/game-engine
+  domain reasoning instead (GLB axis-convention mismatches for rotation,
+  spawn-point stacking under concurrency for spawn radius, explicit
+  parent-child hierarchy requirements for parenting, cone-angle/range vs.
+  room-scale mismatches for spotlights), deliberately avoiding invented
+  specific numbers (default angles, ranges, distances) that aren't actually
+  known. This is a materially different sourcing situation from the same
+  page's `apply_operations` entry, which *is* a direct quote — flagging the
+  split explicitly since `gotchas.md` mixes both in one page. If the real
+  `docs://` gotcha content is available later, reconcile these four entries
+  against it rather than assuming the reasoning here is authoritative.
+- **2026-07-28 (Code 2c) — minor:** The `versions.md` entry content
+  (highlights, migration notes, and the 1.3 line's initial release date of
+  2026-05-29) was supplied directly in this session's task brief rather
+  than independently re-derived. Cross-checked the two dates that
+  overlapped with prior research — 1.3.7's patch date (2026-07-10, from
+  Cowork 2a) and 2.0.0's release date (2026-07-22, from Cowork 2a/2a.5) —
+  against the brief's figures and found no conflicts; the entry represents
+  the 1.3 line as "released 2026-05-29 (through patch 1.3.7, 2026-07-10)"
+  to keep both facts visible rather than picking one date.
 
 ## Known Issues
 
@@ -255,8 +313,6 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code 2b-patch session — added three missing
-2.0-delta items to the Porting Your Game pages (bridge port/embedded-browser
-caveat in debugging.md, tool-profile table + manifest resource in
-capabilities.md, builder-profile asset restriction in assets.md) and
-reworded capabilities.md's genre-fit section as explicit guidance
+Last updated: 2026-07-28 by Code 2c session — wrote all four Reference pages
+(gotchas, troubleshooting, versions, glossary), closing out Phase 2 entirely
+now that all 13 original stub pages have real content
