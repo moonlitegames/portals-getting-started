@@ -99,6 +99,22 @@ up context quickly.
   `plan_gameplay_mechanic`, etc.) run under, with no `builder`-specific
   section, consistent with Start Here. Revisit both together if `builder`
   changes status.
+- **v2.0.0 delta — not written up, tracked here for whoever picks up
+  `builder` documentation later** (2026-07-28, v2.0.0 docs update session):
+  - `builder`'s RC.2 launch-scope narrowing (source-room-contents-only,
+    isolated-workspace operation types, no marketplace/paid-generation path
+    yet) — currently only summarized in `reference/versions.md`'s 2.0.0
+    entry, not detailed anywhere in `porting/capabilities.md` since this
+    guide still deliberately doesn't document `builder` (see Track B below).
+  - The Build Kernel's internal contract schemas (`core-playtest.json`,
+    `mutation.json`, `plan.json` under `packages/harness-core`) and the
+    `MCP_IMPLEMENTATION_GUIDE.md` / `RUNTIME_HARNESS_RUNBOOK.md` documents —
+    these are `portals-mcp` contributor/package-internals docs, not reader-
+    facing, and were deliberately not surfaced anywhere in this guide.
+  - The new internal requirement that a `builder`-profile playtest plan
+    checkpoints for multi-zone travel routes from real placed-item anchors
+    (never invented coordinates) — scoped entirely to `builder`'s internal
+    Core playtest workflow, out of scope for the same reason as the above.
 - **Phase 3 — automation & polish.** ✅ Automation pipeline complete as of
   Code Phase 3 (2026-07-28). Remaining polish items:
   - Repo is launching at `moonlitegames/portals-getting-started` (personal
@@ -113,6 +129,71 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (v2.0.0 docs update):** v2.0.0 docs update: `reference/gotchas.md`,
+  `start-here/setup.md`, `reference/versions.md`. This is the first live run of
+  the `check-portals-release.yml` pipeline against a real bundled-docs diff
+  (previous sessions only had a task-brief summary of 1.3.7→2.0.0, not the
+  actual `dist/resources/` + README diff). Cross-checked every existing page
+  against the real diff rather than assuming prior sessions' speculative
+  2.0.0 content was correct, and found one real inaccuracy plus one gap:
+  1. **`reference/gotchas.md` — corrected.** The "`apply_operations` freshness
+     model" section said the workaround to avoid was reaching for
+     `set_room_data` to "force through" a rejected batch. The real diff shows
+     `set_room_data` is now *also* guarded by the same current-baseline-snapshot
+     precondition in 2.0.0 (and `get_room_data` now attaches an explicit
+     SHA-256 freshness precondition to its snapshot) — so that workaround no
+     longer exists at all, it doesn't just discard data. Rewrote the section
+     (retitled "The room-write freshness model") to state this correctly.
+  2. **`start-here/setup.md` — gap filled.** `reference/versions.md` already
+     had a "Codex client support" bullet (written from the task brief in an
+     earlier session) but `setup.md` — the actual how-to page — never got the
+     corresponding config block. Added a **Codex** subsection under "Connect
+     it to your MCP client" (renamed from "your Claude client," since Codex
+     isn't a Claude product) with the `~/.codex/config.toml` block and the
+     `default_tools_approval_mode = "approve"` note from the real README diff.
+  3. **`reference/versions.md` — amended in place, not duplicated.** The task
+     instructions said to always add a new dated entry; deviating from that
+     literal instruction is flagged separately below.
+  No other guide page needed changes — `porting/capabilities.md`,
+  `porting/assets.md`, `porting/debugging.md`, `porting/mental-model.md`,
+  `porting/porting-workflow.md`, `reference/glossary.md`,
+  `reference/troubleshooting.md`, all four Start Here pages, and `index.mdx`
+  were all checked against the diff and found already accurate or genuinely
+  unaffected (see the sourcing note directly below for what was intentionally
+  left out). Bumped `.portals-mcp-version` to `2.0.0`. Could not run
+  `npm run build` to verify — `npm install` required approval this session
+  didn't grant (no `node_modules` present); see Known Issues.
+- **2026-07-28 (v2.0.0 docs update) — deviation, versions.md:** The task
+  brief said to "always update `reference/versions.md` with a new entry," but
+  this file already had a full `## 2.0.0` entry — written speculatively in an
+  earlier session (Code 2c) from a task-brief summary, before this session's
+  real bundled-docs diff was available (see the Code 2c "sourcing" log entry
+  below). Since the version number genuinely did not change (still 2.0.0,
+  going from `.portals-mcp-version` `1.3.7`), adding a second `## 2.0.0`
+  header would violate the page's own template comment (one entry per
+  version, newest-first) and just be a duplicate. Instead, amended the
+  existing entry in place using the real diff as the authoritative source:
+  broadened the freshness bullet to cover `get_room_data`/`set_room_data`
+  (not just `apply_operations`), added the doc-count delta (148→160) and the
+  new `docs://ai/tool-capability-manifest` resource, added a pointer from the
+  Codex bullet to the new `setup.md` config block, narrowed the `builder`
+  bullet with the RC.2 launch-scope detail (source-room-only, no
+  marketplace/paid-generation path), and added a new bullet + migration note
+  for the build-ambition policy change (bundled AI guidance went from "build
+  5–10x more than minimum" to "match scope to the player promise" —
+  `dist/resources/ai/bootstrap.json`'s `build_policy`). Left out of every
+  page, deliberately, as internal/contributor-facing rather than reader-facing:
+  the `core-playtest.json`/`mutation.json`/`plan.json` Build Kernel contract
+  schemas, `MCP_IMPLEMENTATION_GUIDE.md`, `RUNTIME_HARNESS_RUNBOOK.md`, and
+  the "Shared Portals Build Kernel" package internals — none of these are
+  reachable through the `compatibility` profile this guide documents, and
+  they're about `portals-mcp`'s own package internals, not something a reader
+  building a game would ever call. Also left out the new "multi-zone travel
+  route checkpoint planning" playtest requirement in `bootstrap.json` — it's
+  scoped to the `builder` profile's internal Core playtest workflow, which
+  this guide already deliberately excludes (see Track B under Planned).
+  Flagging both omissions under Planned below in case `builder` graduates out
+  of candidate status and this guide's Track B call changes.
 - **2026-07-28 (Code Phase 3-fix4):** Added `--allowedTools` to `claude_args`
   — agent-mode runs require explicit tool approval; without it all Edit/Write
   and git operations were rejected as "requires approval." Allowed tools:
@@ -364,6 +445,13 @@ up context quickly.
 
 ## Known Issues
 
+- **2026-07-28 (v2.0.0 docs update):** Could not run `npm run build` or
+  `npm test` to verify this session's changes — `npm install` required
+  approval that wasn't granted in this session, and no `node_modules`
+  directory was present to fall back on. Changes were reviewed by hand
+  instead (Markdown/MDX syntax, internal link targets, and code-fence
+  languages all checked manually). Whoever reviews the PR should run a real
+  `npm run build` before merging.
 - First Pages deploy against the real `moonlitegames/portals-getting-started`
   repo failed on Node version (see Decisions log above); the
   `node-version: 22` fix hasn't been confirmed by a successful run yet. The
@@ -382,5 +470,7 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3-fix4 session — added allowedTools and
-mandatory-PR instruction to check-portals-release workflow
+Last updated: 2026-07-28 by v2.0.0 docs update session — corrected the
+room-write freshness model in gotchas.md, added Codex setup instructions,
+amended the versions.md 2.0.0 entry against the real bundled-docs diff, and
+bumped .portals-mcp-version to 2.0.0

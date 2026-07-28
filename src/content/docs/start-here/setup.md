@@ -15,7 +15,7 @@ node -v
 
 If that fails, or shows something older than v18, install a current Node.js from [nodejs.org](https://nodejs.org) or via a version manager like `nvm`. You don't need to install the Portals MCP itself — the next step handles that automatically, every time, via `npx`.
 
-## 2. Connect it to your Claude client
+## 2. Connect it to your MCP client
 
 Pick whichever client you use.
 
@@ -39,6 +39,17 @@ claude mcp add portals -- npx -y portals-mcp@latest
 ```
 
 If you already have other MCP servers configured, add `"portals"` alongside them — don't replace the whole file.
+
+**Codex**: add a `[mcp_servers.portals]` entry to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.portals]
+command = "npx"
+args = ["-y", "portals-mcp@latest"]
+default_tools_approval_mode = "approve"
+```
+
+`default_tools_approval_mode = "approve"` matters if you're driving Codex in a noninteractive or agent-driven session — without it, every single tool call waits on a manual approval prompt.
 
 ## 3. Restart your client
 

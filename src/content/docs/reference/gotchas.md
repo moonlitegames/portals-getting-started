@@ -48,11 +48,11 @@ Different parts of the Portals data model use different rotation formats, and mi
 
 **Why it bites:** a model that looked correctly oriented in your original engine can come in rotated — lying on its side, facing backward — once placed in Portals. If you're porting from Unity, Blender, or Unreal, the axis convention baked into your GLB export may not match Portals' Y-up coordinate system. And a camera set with identity rotation `(0,0,0,1)` will be looking at the ground, not forward — this is easy to misdiagnose as broken trigger wiring when the camera is actually just pointing the wrong way.
 
-## The `apply_operations` freshness model
+## The room-write freshness model
 
-`apply_operations` enforces a strict rule worth knowing before it surprises you: it runs "atomic targeted ops against a mandatory fresh room download" and never uploads a partial batch or falls back to stale local data. Every batch of operations needs its own fresh `get_room_data` snapshot taken immediately beforehand — if the room changed since you last downloaded it, the operation is rejected rather than silently overwriting.
+Every room-write tool is guarded against stale data, not just `apply_operations`. `get_room_data` attaches a SHA-256 freshness precondition to the snapshot it downloads, and both `apply_operations` (atomic targeted ops) and `set_room_data` (full-snapshot replacement) reject a write outright if the room changed since that snapshot was taken — neither one uploads a partial batch or silently overwrites concurrent changes.
 
-This is a gotcha-*preventer*, not a gotcha: it's exactly the mechanism that stops the classic "two edits clobber each other" failure mode common with plain scene files. The mistake to avoid is working around a rejected batch by reaching for `set_room_data` (a full replacement) just to force it through — that discards anything that changed since your stale snapshot instead of surfacing the conflict. Re-download and retry the targeted operation instead, especially if you're applying several slices back-to-back in the same session (see [Porting Workflow](/porting/porting-workflow/)).
+This is a gotcha-*preventer*, not a gotcha: it's exactly the mechanism that stops the classic "two edits clobber each other" failure mode common with plain scene files. The one thing worth knowing so it doesn't look like a bug: `set_room_data` is **not** an escape hatch around a rejected `apply_operations` batch — as of `portals-mcp` 2.0.0 it enforces the same current-baseline-snapshot requirement, so reaching for it to "force through" a stale write fails the same way. Re-download a fresh `get_room_data` snapshot and retry instead, especially if you're applying several slices back-to-back in the same session (see [Porting Workflow](/porting/porting-workflow/)).
 
 ## Try it
 
