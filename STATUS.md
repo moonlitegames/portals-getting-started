@@ -578,10 +578,13 @@ up context quickly.
   instead (Markdown/MDX syntax, internal link targets, and code-fence
   languages all checked manually). Whoever reviews the PR should run a real
   `npm run build` before merging.
-- First Pages deploy against the real `moonlitegames/portals-getting-started`
-  repo failed on Node version (see Decisions log above); the
-  `node-version: 22` fix hasn't been confirmed by a successful run yet. The
-  link-check workflow is still untested against a live remote.
+- ~~First Pages deploy failed on Node version~~ — **resolved.** The
+  `node-version: 22` fix has since been confirmed by multiple successful
+  deploys (most recently the Code link-fix push, verified green via
+  `gh run watch` and by loading the live site and clicking through a
+  relative link in production). The link-check workflow itself is still
+  untested against a live remote (no PR has been opened against this repo
+  yet to trigger it).
 - **Transfer-time URL change required.** This repo currently lives at
   `moonlitegames/portals-getting-started` and `astro.config.mjs` is set to
   `site: 'https://moonlitegames.github.io'`. When the repo transfers to the
