@@ -115,8 +115,8 @@ up context quickly.
     checkpoints for multi-zone travel routes from real placed-item anchors
     (never invented coordinates) — scoped entirely to `builder`'s internal
     Core playtest workflow, out of scope for the same reason as the above.
-- **Phase 3 — automation & polish.** ✅ Automation pipeline complete as of
-  Code Phase 3 (2026-07-28). Remaining polish items:
+- **Phase 3 — automation & polish.** ✅ Complete as of Code Phase 3-close
+  (2026-07-28). Remaining polish items (non-blocking):
   - Repo is launching at `moonlitegames/portals-getting-started` (personal
     account), transferring to the `busportals` org later — see the
     transfer-time `site` URL update tracked under Known Issues.
@@ -129,6 +129,20 @@ up context quickly.
 
 ## Decisions & Changes Log
 
+- **2026-07-28 (Code Phase 3-close):** Phase 3 closure. End-to-end release
+  automation tested against a simulated 1.3.7→2.0.0 release; first automated
+  PR (#1) merged, which corrected a real doc error (freshness model now
+  covers `set_room_data` too, not just `apply_operations`) and closed a Codex
+  setup doc gap. Observed cost ~$1.50 and ~5 min per release run. Closure
+  changes: (1) set `show_full_output` back to `false` in
+  `check-portals-release.yml` now that the pipeline is proven;
+  (2) added `Bash(npm install:*)`, `Bash(npm ci:*)`, `Bash(npm test:*)` to
+  `--allowedTools` so future runs can self-verify builds; (3) fixed
+  `link-check.yml` — lychee was failing on JSX template literals in
+  `index.mdx` (reads `{${base}/...}` as URLs) and can't resolve root-relative
+  internal links from raw source files; restricted to external `http`/`https`
+  links only (internal links are already validated by `astro build` route
+  resolution) and added an exclude pattern for the template-literal artifacts.
 - **2026-07-28 (v2.0.0 docs update):** v2.0.0 docs update: `reference/gotchas.md`,
   `start-here/setup.md`, `reference/versions.md`. This is the first live run of
   the `check-portals-release.yml` pipeline against a real bundled-docs diff
@@ -470,7 +484,5 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by v2.0.0 docs update session — corrected the
-room-write freshness model in gotchas.md, added Codex setup instructions,
-amended the versions.md 2.0.0 entry against the real bundled-docs diff, and
-bumped .portals-mcp-version to 2.0.0
+Last updated: 2026-07-28 by Code Phase 3-close session — Phase 3 automation
+proven end-to-end (PR #1 merged), pipeline hardened, link-check fixed

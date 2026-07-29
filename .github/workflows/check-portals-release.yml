@@ -176,7 +176,6 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
-            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(npm run build:*)"
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(git:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(npm run build:*),Bash(npm install:*),Bash(npm ci:*),Bash(npm test:*)"
           prompt: ${{ env.PORTALS_UPDATE_PROMPT }}
-          # Debugging: set to false once the pipeline is proven end-to-end
-          show_full_output: true
+          show_full_output: false

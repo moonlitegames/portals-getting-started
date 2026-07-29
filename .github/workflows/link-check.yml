@@ -16,7 +16,13 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
+          # Only check external http(s) links. Internal links are validated by
+          # astro build (route resolution), and lychee can't resolve them from
+          # raw source files anyway. Also exclude JSX template-literal artifacts
+          # like {${base}/...} in .mdx files, which lychee misreads as URLs.
           args: >-
             --verbose --no-progress
+            --scheme 'https' --scheme 'http'
+            --exclude '\$\{base\}'
             './**/*.md' './**/*.mdx'
           fail: true
