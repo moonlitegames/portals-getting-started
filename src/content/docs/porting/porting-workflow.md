@@ -11,7 +11,7 @@ Break the doc into a flat list of individual mechanics and systems: movement mod
 
 ## 2. Feasibility-check each one
 
-Before any of these mechanics goes into a Portals-specific design doc, run it through `resolve_gameplay_capability` and, for anything supported or workaround-able, `plan_gameplay_mechanic`. Full detail on this step is in [Capabilities](/porting/capabilities/) — the point here is sequencing: do this for every mechanic on your list *before* you commit any of them to a specific implementation. It's much cheaper to discover a mechanic needs redesigning at the list stage than after you've built two other systems on top of an assumption about it.
+Before any of these mechanics goes into a Portals-specific design doc, run it through `resolve_gameplay_capability` and, for anything supported or workaround-able, `plan_gameplay_mechanic`. Full detail on this step is in [Capabilities](../capabilities/) — the point here is sequencing: do this for every mechanic on your list *before* you commit any of them to a specific implementation. It's much cheaper to discover a mechanic needs redesigning at the list stage than after you've built two other systems on top of an assumption about it.
 
 ## 3. Reorder by risk, not by story order
 
@@ -23,7 +23,7 @@ One mechanic, or one tightly coupled group of mechanics, at a time. Each slice i
 
 ## 5. Playtest each slice before starting the next
 
-This is [The Loop](/start-here/the-loop/) from Start Here, applied per-mechanic instead of per-whole-game. A slice that looks right in a `render_scene` screenshot still needs an actual playthrough — a screenshot shows you what the room looks like, not what it feels like to trigger that specific mechanic. Play it yourself, or drive it live via `connect_to_game` and `poll_game_events` (see [Debugging](/porting/debugging/)) if you want Claude verifying behavior in the same session.
+This is [The Loop](../../start-here/the-loop/) from Start Here, applied per-mechanic instead of per-whole-game. A slice that looks right in a `render_scene` screenshot still needs an actual playthrough — a screenshot shows you what the room looks like, not what it feels like to trigger that specific mechanic. Play it yourself, or drive it live via `connect_to_game` and `poll_game_events` (see [Debugging](../debugging/)) if you want Claude verifying behavior in the same session.
 
 Don't start the next slice until the current one is confirmed working end to end. Mechanics in Portals frequently share variables and tasks (a score variable read by both a HUD trigger and a win-condition check, say) — compounding an unconfirmed bug under a second unconfirmed mechanic makes the eventual debugging session much worse than two separate, verified slices would have been.
 

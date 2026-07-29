@@ -34,7 +34,7 @@ Generation costs you two things a marketplace claim doesn't: time (it's async �
 
 ## Profile note
 
-Every tool on this page — marketplace search/claim/placement and all of the paid AI generation tools — lives in the default **`compatibility`** profile only (see [Capabilities](/porting/capabilities/) for the full profile breakdown). The opt-in `builder` profile deliberately excludes marketplace and asset-generation tools entirely, in favor of its own smaller, outcome-oriented tool set. If you're on `builder` for any reason, switch back to `compatibility` before following this page.
+Every tool on this page — marketplace search/claim/placement and all of the paid AI generation tools — lives in the default **`compatibility`** profile only (see [Capabilities](../capabilities/) for the full profile breakdown). The opt-in `builder` profile deliberately excludes marketplace and asset-generation tools entirely, in favor of its own smaller, outcome-oriented tool set. If you're on `builder` for any reason, switch back to `compatibility` before following this page.
 
 ## Bringing your own exports
 

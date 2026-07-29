@@ -3,7 +3,7 @@ title: The Loop
 description: The core build-test-iterate loop for developing with Portals.
 ---
 
-If you've done [Your First Room](/start-here/first-room/), you already ran this once. This page is about treating it as the permanent rhythm, not a one-time onboarding exercise — every room you build, and every change to a room you already have, goes through the same four steps.
+If you've done [Your First Room](../first-room/), you already ran this once. This page is about treating it as the permanent rhythm, not a one-time onboarding exercise — every room you build, and every change to a room you already have, goes through the same four steps.
 
 ## Design → Build → Playtest → Iterate
 
@@ -47,11 +47,11 @@ None of these mention a tool, a file, or an API. They describe the room from the
 
 ## When the loop stalls
 
-If an iteration request doesn't produce the change you expected, don't rephrase the same ask over and over. Be more specific about the observed behavior versus the expected one ("the scoreboard shows 0 after the second round instead of carrying over the score"), or check [Troubleshooting](/reference/troubleshooting/) and [Gotchas](/reference/gotchas/) for known issues with the mechanic you're working on. Most stalls are a design ambiguity Claude guessed wrong on, not a broken tool — going back to the design step for one sentence of clarification is often faster than several iteration attempts.
+If an iteration request doesn't produce the change you expected, don't rephrase the same ask over and over. Be more specific about the observed behavior versus the expected one ("the scoreboard shows 0 after the second round instead of carrying over the score"), or check [Troubleshooting](../../reference/troubleshooting/) and [Gotchas](../../reference/gotchas/) for known issues with the mechanic you're working on. Most stalls are a design ambiguity Claude guessed wrong on, not a broken tool — going back to the design step for one sentence of clarification is often faster than several iteration attempts.
 
 ## Try it
 
-Take the room you built in [Your First Room](/start-here/first-room/) — or any room you're currently working on — and run one more iteration using the pattern above:
+Take the room you built in [Your First Room](../first-room/) — or any room you're currently working on — and run one more iteration using the pattern above:
 
 ```text
 Here's what I noticed when I played it just now: [describe one specific

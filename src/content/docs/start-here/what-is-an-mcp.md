@@ -37,7 +37,7 @@ It's also not magic. Claude is calling real tools against a real API, the same w
 
 Once it's installed (next page), the Portals MCP effectively adds a toolbox to Claude that only shows up when you're talking about Portals. You won't see a list of these tools most of the time — you'll just notice that Claude can now do things like "build that" or "show me a screenshot" instead of only describing them. Knowing that this toolbox exists, and that it's what's actually creating and editing your room, is the one piece of context that makes everything else in this guide make sense.
 
-The four-step rhythm you'll use for every project — design, build, playtest, iterate — is covered in full on [The Loop](/start-here/the-loop/). For now, the only thing to remember is: MCP = tools Claude can call. Portals MCP = the specific tools for building and running games on Portals.
+The four-step rhythm you'll use for every project — design, build, playtest, iterate — is covered in full on [The Loop](../the-loop/). For now, the only thing to remember is: MCP = tools Claude can call. Portals MCP = the specific tools for building and running games on Portals.
 
 ## Try it
 

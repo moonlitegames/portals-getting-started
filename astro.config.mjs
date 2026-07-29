@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLinksValidator from 'starlight-links-validator';
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,7 +12,21 @@ export default defineConfig({
 			title: 'Portals Getting Started',
 			description: 'The definitive guide for developers building games with the Portals MCP.',
 			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/busportals/portals-mcp' },
+				{ icon: 'npm', label: 'npm', href: 'https://www.npmjs.com/package/portals-mcp' },
+			],
+			plugins: [
+				starlightLinksValidator({
+					// This site deploys under an Astro `base` subpath, and Astro does not
+					// prepend `base` to hand-authored root-absolute links (only to its own
+					// generated navigation) — so every internal content link here is
+					// deliberately relative, which is what actually works in production.
+					// This plugin can only structurally validate root-absolute links against
+					// known page slugs; it cannot verify relative-link targets at all (by
+					// design — see its docs), so `errorOnRelativeLinks: false` is required
+					// or the build would always fail on our correct links. See STATUS.md's
+					// Decisions log ("Code link-fix") for the full tradeoff this leaves.
+					errorOnRelativeLinks: false,
+				}),
 			],
 			sidebar: [
 				{

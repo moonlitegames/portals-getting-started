@@ -3,7 +3,7 @@ title: Your First Room
 description: A walkthrough of building your first room in Portals.
 ---
 
-This is a 15-minute walkthrough of the whole cycle, start to finish: you'll design something small, have Claude build it, play it in your browser, and ask for one change. If you haven't connected the Portals MCP yet, do [Setup](/start-here/setup/) first.
+This is a 15-minute walkthrough of the whole cycle, start to finish: you'll design something small, have Claude build it, play it in your browser, and ask for one change. If you haven't connected the Portals MCP yet, do [Setup](../setup/) first.
 
 Before you ask for anything, it's worth spending ten seconds confirming the connection. Ask Claude to call `get_server_info` — it reports the server version and the active tool profile, so you know exactly what you're running before you build anything on top of it:
 
@@ -60,7 +60,7 @@ apart to jump between" or "the win screen never showed up."] Fix that.
 
 Claude updates the room in place — same room ID, same link. Reload the page and check the change.
 
-That's the whole loop: design, build, playtest, iterate. You'll repeat step 5 as many times as you want; nothing about steps 1–4 needs to happen again for the same room. The rhythm you just went through is the permanent working pattern for building with Portals — see [The Loop](/start-here/the-loop/) for how to keep using it well past your first room.
+That's the whole loop: design, build, playtest, iterate. You'll repeat step 5 as many times as you want; nothing about steps 1–4 needs to happen again for the same room. The rhythm you just went through is the permanent working pattern for building with Portals — see [The Loop](../the-loop/) for how to keep using it well past your first room.
 
 ## Try it
 

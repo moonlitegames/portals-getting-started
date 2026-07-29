@@ -2,8 +2,9 @@
 
 Documentation site for developers building games with the **Portals MCP**
 ([`portals-mcp`](https://www.npmjs.com/package/portals-mcp) on npm,
-[busportals/portals-mcp](https://github.com/busportals/portals-mcp) on GitHub,
-published to [theportal.to](https://theportal.to)).
+published to [theportal.to](https://theportal.to)). The `portals-mcp`
+GitHub repository is not publicly accessible, so npm is this guide's
+authoritative link for the package.
 
 Built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build).
 

@@ -13,7 +13,7 @@ If you've ported anything to a new engine before, you know the expensive mistake
 - **`lookup`** — fast knowledge search over items, triggers, effects, and systems when you need to know if something specific already exists.
 - **`search_recipes`** — queries a built-in recipe manifest (dice, board games, keypads, leaderboards, cutscenes, and more) for existing patterns. If your mechanic resembles something common, there's a decent chance a recipe already covers the wiring — check before designing from scratch.
 
-The practical workflow: for every mechanic in your design doc, ask Claude to call `resolve_gameplay_capability` first. Supported → proceed. Workaround → get the `plan_gameplay_mechanic` contract and expect the implementation to look different from your original engine's approach (see [Mental Model](/porting/mental-model/)). Unsupported or unknown → redesign that piece now, while it's still a paragraph, not a built room.
+The practical workflow: for every mechanic in your design doc, ask Claude to call `resolve_gameplay_capability` first. Supported → proceed. Workaround → get the `plan_gameplay_mechanic` contract and expect the implementation to look different from your original engine's approach (see [Mental Model](../mental-model/)). Unsupported or unknown → redesign that piece now, while it's still a paragraph, not a built room.
 
 ## What tends to map well
 
@@ -25,11 +25,11 @@ Portals' task/trigger/effect architecture is fundamentally event-driven and stat
 
 ## What tends to map poorly
 
-The honest constraint, from [Mental Model](/porting/mental-model/): the closest thing to scripting is an expression language (NCalc via Function Effects/"JS effectors") with conditionals and math, but **no loops, no arrays, and no custom functions**. As guidance, that tends to rule out, or make expensive, anything that leans on:
+The honest constraint, from [Mental Model](../mental-model/): the closest thing to scripting is an expression language (NCalc via Function Effects/"JS effectors") with conditionals and math, but **no loops, no arrays, and no custom functions**. As guidance, that tends to rule out, or make expensive, anything that leans on:
 
 - Continuous per-frame simulation — custom physics-driven puzzles, projectile trajectories computed frame-by-frame, anything that isn't naturally event-driven.
 - Complex AI — pathfinding, behavior trees, or anything stateful across many entities that isn't expressible as a handful of task transitions.
-- Procedural generation that leans on loops or arrays at logic-execution time (dynamic dungeon layouts computed on the fly, for example — pre-generating and placing via marketplace/AI-asset tools is a different story, see [Assets](/porting/assets/)).
+- Procedural generation that leans on loops or arrays at logic-execution time (dynamic dungeon layouts computed on the fly, for example — pre-generating and placing via marketplace/AI-asset tools is a different story, see [Assets](../assets/)).
 - Heavy persistent-save systems beyond what room and user inventory already model — cross-room progression that needs its own data schema tends to be a workaround at best, not a built-in.
 
 None of this means "impossible" — `resolve_gameplay_capability` returning `workaround` is common and often fine. Treat this section as a starting intuition, not a substitute for actually checking: don't assume your engine's approach transfers, and get the `plan_gameplay_mechanic` contract before committing design-doc language to a specific implementation.
@@ -40,7 +40,7 @@ None of this means "impossible" — `resolve_gameplay_capability` returning `wor
 
 | Profile | Tools | What it's for |
 |---|---|---|
-| **`compatibility`** (default) | 53 | The full surface: marketplace/inventory, room management, scene design, live game connection, AI-generated assets, and the planning tools above. This guide, and [Setup](/start-here/setup/), assume this profile throughout. |
+| **`compatibility`** (default) | 53 | The full surface: marketplace/inventory, room management, scene design, live game connection, AI-generated assets, and the planning tools above. This guide, and [Setup](../../start-here/setup/), assume this profile throughout. |
 | **`expert`** | 27 | Low-level debugging and escape-hatch tools, for direct manipulation once you know exactly what you're doing. |
 | **`builder`** | 7 | Opt-in, outcome-oriented tools (`manage_project`, `inspect_game`, `start_build`, `apply_build`, `playtest_build`, `finalize_build`, plus `authenticate`) — an MCP 2.0 candidate, not the path this guide documents. |
 

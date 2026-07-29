@@ -25,7 +25,7 @@ Everything above is a re-labeling except one thing, and it's the one that actual
 - Conditional logic lives in Function Effect expressions (`if($N{coins} >= 10, ..., ...)`), evaluated once per trigger firing, not once per frame.
 - Anything that would be a data structure in your engine (an inventory array, a list of active enemies) has to be represented as flat named variables or as items you query for, since there are no arrays in the expression language.
 
-Porting a mechanic, then, is less "translate this script" and more "decompose this script into a graph of triggers and effects." A health-and-damage system that was fifty lines of C# might become three or four small tasks: one that reacts to a `Player Died` trigger, one that resets health on respawn, one Function Effect that clamps the value. That decomposition step is most of what [Porting Workflow](/porting/porting-workflow/) walks through.
+Porting a mechanic, then, is less "translate this script" and more "decompose this script into a graph of triggers and effects." A health-and-damage system that was fifty lines of C# might become three or four small tasks: one that reacts to a `Player Died` trigger, one that resets health on respawn, one Function Effect that clamps the value. That decomposition step is most of what [Porting Workflow](../porting-workflow/) walks through.
 
 ## What carries over cleanly
 
@@ -33,7 +33,7 @@ Multiplayer state, room settings, and the quest/task system map closely enough t
 
 ## What to check before you assume something translates
 
-Not every mechanic decomposes cleanly into triggers and effects — some genuinely don't fit the expression-language model. Before you sink time into designing a port for a specific mechanic, check [Capabilities](/porting/capabilities/) for how to verify feasibility with the MCP's own planning tools, rather than discovering the gap mid-build.
+Not every mechanic decomposes cleanly into triggers and effects — some genuinely don't fit the expression-language model. Before you sink time into designing a port for a specific mechanic, check [Capabilities](../capabilities/) for how to verify feasibility with the MCP's own planning tools, rather than discovering the gap mid-build.
 
 ## Try it
 

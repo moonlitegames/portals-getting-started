@@ -26,7 +26,7 @@ Say a coin pickup isn't updating the on-screen scoreboard. Here's the trace, too
 - **It didn't increment.** The break is upstream — the `Item Collected` trigger isn't reaching an `Update Value` effect. Confirm with `inspect_room_data` or `query_room` on that specific collectible item: does its trigger list actually include the effect you expect?
 - **It did increment, but the HUD still shows the old number.** The break is downstream, between the variable and the display. Check whether a `Value Updated` trigger on `Coins` is wired to a `Send Message To Iframes` effect targeting your scoreboard iframe. `get_runtime_data`'s effector-result reporting tells you whether that effect actually ran and what string it sent — if it ran and sent the right value but the iframe still shows stale data, the bug has moved into the iframe's own JavaScript message handling, not the room logic.
 
-**4. Fix and re-verify live, not just visually.** Patch the wiring with `apply_operations`, then repeat steps 2–3 on the same slice. A `render_scene` screenshot showing an updated number isn't proof — confirm via `get_runtime_data` or another live pickup that the chain actually fired end to end, the same discipline as [The Loop](/start-here/the-loop/) and per-slice playtesting in [Porting Workflow](/porting/porting-workflow/).
+**4. Fix and re-verify live, not just visually.** Patch the wiring with `apply_operations`, then repeat steps 2–3 on the same slice. A `render_scene` screenshot showing an updated number isn't proof — confirm via `get_runtime_data` or another live pickup that the chain actually fired end to end, the same discipline as [The Loop](../../start-here/the-loop/) and per-slice playtesting in [Porting Workflow](../porting-workflow/).
 
 ## Using `change_task_state` as an isolation tool
 
@@ -34,7 +34,7 @@ If you're not sure whether the problem is the trigger or the effect, skip the tr
 
 ## No special setup required
 
-Live debugging tools are available in the same default **compatibility** tool profile that [Setup](/start-here/setup/) has you install — no config changes needed to use `connect_to_game`, `get_runtime_data`, or any of the tools above.
+Live debugging tools are available in the same default **compatibility** tool profile that [Setup](../../start-here/setup/) has you install — no config changes needed to use `connect_to_game`, `get_runtime_data`, or any of the tools above.
 
 ## Try it
 

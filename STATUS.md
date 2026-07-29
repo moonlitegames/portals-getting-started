@@ -6,6 +6,24 @@ up context quickly.
 
 ## Implemented
 
+- **2026-07-28 (Code link-fix):** Three sitewide link fixes. (1) Converted
+  all 57 root-relative internal links (`/start-here/...`, `/porting/...`,
+  `/reference/...`) across all 13 content pages to relative links
+  (`../foo/` same-section, `../../section/foo/` cross-section) — confirmed
+  by direct build test that Astro does **not** base-prefix hand-authored
+  root-absolute links (only its own generated nav does), so these were
+  genuinely broken in production. (2) Replaced every
+  `github.com/busportals/portals-mcp` link (astro.config.mjs's social icon,
+  index.mdx's hero action, README.md, and three "official repo" mentions in
+  setup.md/glossary.md/troubleshooting.md) with
+  `https://www.npmjs.com/package/portals-mcp`, since the GitHub repo 404s
+  publicly; "official repo" text became "official package" where it no
+  longer fit. (3) Installed and configured `starlight-links-validator` so
+  `astro build` now fails on broken internal links — verified it actually
+  catches a deliberately broken link before reverting the test. See the
+  Decisions log for the full investigation and the validator's real
+  limitation with relative links. Verified with `npm ci` + `npm run build`
+  (clean, all 15 routes, "All internal links are valid").
 - **2026-07-28 (Code 2c):** Wrote real content for all four Reference pages —
   `gotchas.md`, `troubleshooting.md`, `versions.md`, `glossary.md` —
   replacing the "Coming soon." stubs. Existing frontmatter (`title` /
@@ -456,9 +474,103 @@ up context quickly.
   against the brief's figures and found no conflicts; the entry represents
   the 1.3 line as "released 2026-05-29 (through patch 1.3.7, 2026-07-10)"
   to keep both facts visible rather than picking one date.
+- **2026-07-28 (Code link-fix) — the lychee misdiagnosis, corrected:** Code
+  Phase 3-close (see that entry above) treated lychee's root-relative-link
+  errors on PR #1 as a **tooling limitation** ("lychee can't resolve
+  root-relative internal links from raw source files") and worked around it
+  by narrowing `link-check.yml` to external links only, reasoning that
+  "internal links are already validated by `astro build` route resolution."
+  That reasoning was wrong on both counts, discovered while investigating
+  this session's task: (1) `astro build`'s route resolution only confirms a
+  route *exists* for each content file — it does not check whether links
+  *within* content resolve correctly, so nothing was actually validating
+  internal links at that point; (2) lychee's errors were **correct** —
+  directly verified by stashing this session's changes, rebuilding the
+  prior committed state, and inspecting the actual output HTML: a
+  root-absolute markdown link like `[Troubleshooting](/reference/troubleshooting/)`
+  rendered as `href="/reference/troubleshooting/"` (missing the
+  `/portals-getting-started` base prefix entirely), while Starlight's own
+  auto-generated sidebar link to the same page correctly rendered
+  `href="/portals-getting-started/reference/troubleshooting/"`. Confirmed
+  against Astro's own docs: `base` is only auto-applied to Astro-generated
+  asset imports/URLs and Starlight's own internal navigation, never to
+  hand-authored hrefs in Markdown/JSX — that's on the author, via relative
+  links or `import.meta.env.BASE_URL`. So every one of those "lychee false
+  positives" was a real, live broken link in production the whole time.
+  Not correcting `link-check.yml` further as a result of this — see below,
+  its current external-only scope is now the *correct* division of labor
+  now that `astro build` genuinely does validate internal links (via
+  `starlight-links-validator`, added this session), it just wasn't true yet
+  when that comment was written.
+- **2026-07-28 (Code link-fix) — root-relative → relative link
+  conversion:** Fixed all 57 root-relative internal links across the 13
+  content pages using the mechanical rule confirmed by the investigation
+  above: same-section link → `../page/`; cross-section link →
+  `../../section/page/` (every content file sits exactly one level under
+  `src/content/docs/`, so this rule is uniform site-wide with no
+  exceptions). Verified every conversion by rebuilding and inspecting
+  rendered hrefs directly (e.g. `../../start-here/setup/` correctly
+  resolved to `/portals-getting-started/start-here/setup/` in the output
+  HTML). `index.mdx`'s two `LinkCard` hrefs were left untouched — they
+  already build from `import.meta.env.BASE_URL` template literals (fixed
+  in an earlier session's Starlight `base`-prefixing gotcha), confirmed
+  still correct.
+- **2026-07-28 (Code link-fix) — GitHub → npm link replacement:** Replaced
+  every `https://github.com/busportals/portals-mcp` reference in
+  reader-facing content with `https://www.npmjs.com/package/portals-mcp`:
+  `astro.config.mjs`'s `social` entry (icon changed `github` → `npm`,
+  Starlight's built-in icon set includes one), `index.mdx`'s hero action
+  ("View on GitHub" → "View on npm"), three "official repo" → "official
+  package" mentions (`setup.md` ×2, `glossary.md`, `troubleshooting.md`),
+  and `README.md`'s project-identity line (dropped the dead GitHub mention
+  entirely rather than relinking it, since the npm line right above it
+  already establishes the package's canonical identity). Deliberately left
+  `STATUS.md`'s own historical Decisions-log prose referencing
+  `github.com/busportals/portals-mcp` (in the Cowork 2a and Cowork 2b
+  sourcing entries) unchanged — those describe actual fetch attempts that
+  were actually made against that URL in the past; rewriting them to point
+  at npm would misrepresent what was actually tried, and they're plain text
+  in a log, not live navigable links.
+- **2026-07-28 (Code link-fix) — starlight-links-validator installed, with
+  a real limitation worth knowing:** Installed `starlight-links-validator`
+  (`^0.25.2`) and enabled it as a Starlight plugin so `astro build` now
+  fails on broken internal links. Verified it works both ways: a
+  deliberately broken link (`/reference/nonexistent-page/`) failed the
+  build with a clear file/line report, then passed clean again once
+  reverted. **However**, read the plugin's source (`libs/validation.ts`)
+  and confirmed via its hosted docs: it can only structurally verify
+  **root-absolute** links (`/section/page/`) against known page slugs —
+  any link starting with `.` (i.e. every relative link, which is now all
+  of ours) is either flagged as a policy violation or, if
+  `errorOnRelativeLinks: false`, skipped entirely with **no resolution
+  check at all**. There is no middle option. Since this site's internal
+  links must be relative (see above), set `errorOnRelativeLinks: false` —
+  meaning this validator's real, current job here is narrower than "catch
+  any broken internal link": it only catches a **typo'd or reintroduced
+  root-absolute link that doesn't resolve to a real page**. It provides
+  *no* structural protection against a mistyped relative link (wrong `../`
+  depth, misspelled slug) — the 57 conversions this session made were
+  verified by hand (grep sweep + build + direct href inspection), not by
+  this tool. Flagging this as a real residual gap, not a solved problem:
+  if broken relative links become a recurring issue, the more complete fix
+  would be a custom rehype plugin that rewrites root-absolute content
+  hrefs to include `base` at build time (letting this validator's default,
+  fully-checked `errorOnRelativeLinks: true` posture be used instead) —
+  out of scope for this session since the task explicitly specified the
+  relative-link conversion as the fix.
 
 ## Known Issues
 
+- **2026-07-28 (Code link-fix):** `starlight-links-validator` is configured
+  with `errorOnRelativeLinks: false` because this site's internal links are
+  all relative (required — see the Decisions log entry above for why). That
+  means the validator only catches broken **root-absolute** links; a
+  mistyped relative link (wrong `../` depth or misspelled slug) will build
+  clean and ship silently. The 57 links converted this session were
+  verified by hand, not by this tool. If this becomes a recurring problem,
+  consider a custom rehype plugin that base-prefixes root-absolute content
+  links at build time instead, which would let the validator run with its
+  default (fully-checked) settings.
 - **2026-07-28 (v2.0.0 docs update):** Could not run `npm run build` or
   `npm test` to verify this session's changes — `npm install` required
   approval that wasn't granted in this session, and no `node_modules`
@@ -484,5 +596,10 @@ up context quickly.
 
 ---
 
-Last updated: 2026-07-28 by Code Phase 3-close session — Phase 3 automation
-proven end-to-end (PR #1 merged), pipeline hardened, link-check fixed
+Last updated: 2026-07-28 by Code link-fix session — converted all 57
+root-relative internal links to relative links (confirmed via direct build
+test that Astro drops `base` on hand-authored absolute hrefs — the PR #1
+lychee errors were real, not a tooling false positive as previously
+diagnosed), replaced all GitHub repo links with the npm package link, and
+installed starlight-links-validator so broken internal links now fail the
+build
